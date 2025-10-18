@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const DEEPSEEK_API_KEY = "sk-20356cca951343aca121bde544d87116"
-const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
+const DEEPSEEK_API_URL = process.env.DEEPSEEK_API_URL
 
 interface EstimationResult {
   treatments: Array<{ name: string; cost: string }>
@@ -39,6 +39,15 @@ function calculateInsuranceRate(treatments: Array<{ name: string; cost: string }
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if environment variables are available
+    if (!DEEPSEEK_API_KEY || !DEEPSEEK_API_URL) {
+      console.error("[v0] Missing environment variables:", { 
+        hasApiKey: !!DEEPSEEK_API_KEY, 
+        hasApiUrl: !!DEEPSEEK_API_URL 
+      })
+      return NextResponse.json({ error: "服务器配置错误" }, { status: 500 })
+    }
+
     const { symptoms } = await request.json()
 
     if (!symptoms) {
